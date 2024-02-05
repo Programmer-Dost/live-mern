@@ -25,4 +25,4 @@ model Todo {
   description String?
   userId      Int
 }
-// pg admin
+// pg admin, supabase, neondb
