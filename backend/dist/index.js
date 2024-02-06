@@ -45,3 +45,9 @@ function getUser(email) {
 }
 // Example usage
 getUser('user3@example.com').catch(console.error);
+//Join 
+// SELECT u.id, u.username, u.email, a.city, a.country, a.street, a.pincode
+//             FROM users u
+//             JOIN addresses a ON u.id = a.user_id
+//             WHERE u.id = $1;
+// 'pg', a orm like mongoose 

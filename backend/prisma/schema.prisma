@@ -12,17 +12,22 @@ datasource db {
 
 model User {
   id        Int    @id @default(autoincrement())
-  username  String @unique
+  email String @unique
   password  String
-  firstName String
-  lastName  String
+  firstName String?
+  lastName  String?
 }
 
 model Todo {
-  id          Int     @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())//@id makes it a primary key
   title       String  @unique
   done        Boolean @default(false)
-  description String?
+  description String? // can be null
   userId      Int
 }
-// pg admin, supabase, neondb
+
+//Delete command:  delete user from Users WHERE id = 1;
+// pg admin, supabase, neondb, elephant sql db, aiven, db versioning-liquid base
+//After changing prisma schema run two commands always:
+// migrate schema:  npx prisma migrate dev --name usersUpdated
+// generate prisma client:  npx prisma generate
