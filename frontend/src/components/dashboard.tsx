@@ -1,11 +1,4 @@
-import React from "react";
-import {
-  RecoilRoot,
-  atom,
-  selector,
-  useRecoilState,
-  useRecoilValue,
-} from "recoil";
+import { useRecoilValue } from "recoil";
 import { countState } from "../store/atoms/countAtom";
 import { userAtom } from "../store/atoms/authAtom";
 function Dashboard() {
@@ -19,7 +12,7 @@ function Dashboard() {
           ? `User Signed In ${userDetails.email}`
           : "Sign In"}{" "}
       </p>
-     Notice: Dashboard is getting {number} count value from recoil atom
+      Notice: Dashboard is getting {number} count value from recoil atom
     </div>
   );
 }

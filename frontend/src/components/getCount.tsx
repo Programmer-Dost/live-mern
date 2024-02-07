@@ -1,16 +1,18 @@
-// import React from 'react'
 import { countState } from "../store/atoms/countAtom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { atom, selector, useRecoilState, useRecoilValue } from "recoil";
 import { userAtom } from "../store/atoms/authAtom";
 import { useNavigate } from "react-router-dom";
-// const jwt = require("jsonwebtoken");
 
 function GetCount() {
-  const [number, setNumber] = useRecoilState(countState);
+  const [number, setNumber] = useRecoilState<number>(countState);
   console.log("rerendering count");
-  const onChange = (event) => {
-    setNumber(event.target.value);
+  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target) {
+      let inputValue = event.target.value;
+      const parsedValue = parseInt(inputValue);
+      setNumber(parsedValue);
+    }
   };
   const [userDetails, setUserDetails] = useRecoilState(userAtom);
   const Router = useNavigate();
@@ -24,8 +26,6 @@ function GetCount() {
         ...prev,
         email: userEmail,
       }));
-      //   let email = jwt.decode(token, "jwt-sign");
-      //   console.log(email);
     }
   }, []);
   return (

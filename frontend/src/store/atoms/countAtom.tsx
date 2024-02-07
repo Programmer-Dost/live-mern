@@ -9,7 +9,7 @@ export const countState = atom({
 export const getSelector = selector({
   key: "getSelector", // unique ID (with respect to other atoms/selectors)
   get: ({ get }) => {
-    const countState = get(countState);
-    return countState % 2 === 0; 
+    const count = get(countState);
+    return count % 2 === 0; 
   },
 });

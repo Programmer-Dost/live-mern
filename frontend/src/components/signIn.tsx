@@ -1,19 +1,19 @@
-import React, { useState } from "react";
+import React, { useState} from "react";
 import { userAtom } from "../store/atoms/authAtom";
 import { useRecoilState } from "recoil";
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userAtoms, setUserAtoms] = useRecoilState(userAtom);
-  async function signIn(e) {
-    e.preventDefault();
+  async function signIn(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); 
     console.log("sign in clicked");
     try {
       const res = await fetch("http://localhost:8080/api/signin", {
         headers: {
           "Content-Type": "application/json",
           username: email,
-          password: password,
+          password: password, 
         },//who moved my cheese
       });
       const responseData = await res.json();
@@ -21,7 +21,7 @@ function SignIn() {
         setUserAtoms({
           email: responseData.result.email,
           signedIn: true,
-          id: responseData.result.id,
+          userId: responseData.result.id,
         });
         // console.log(responseData.token)
         localStorage.setItem('user', responseData.result.email)
@@ -31,11 +31,12 @@ function SignIn() {
     } catch (e) {
       console.log(e);
     }
+    
   }
   return (
     <div>
       <p className="text-gray-400 mx-6 mt-4">   {userAtoms.signedIn ? `User Signed In ${userAtoms.email}` : "Sign In"}</p>
-      <form method="GET" onSubmit={signIn}>
+      <form method="GET" onSubmit ={signIn}>
         <input className="border-2 bg-gray-200 rounded mx-4 p-2"
           type="Email"
           name="Email"
