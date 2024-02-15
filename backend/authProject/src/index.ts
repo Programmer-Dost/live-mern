@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import express, { Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import axios from "axios";
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const app = express();
@@ -13,6 +14,10 @@ let emailSchema = z.string().email();
 let passwordSchema = z
   .string()
   .min(5, { message: "Must be 5 or more characters long" });
+
+
+
+
 async function userMiddleware(req: Request, res: Response, next: NextFunction) {
   let username = req.headers["username"] as string;
   let password = req.headers["password"] as string;
@@ -42,21 +47,22 @@ app.post(
   async function (req: Request, res: Response) {
     if (req.body.result !== undefined && req.body.result.email !== undefined) {
       res.json({ msg: "User Exists" });
-    }else{
-    let username = req.headers["username"] as string;
-    let password = req.headers["password"] as string;
-    let { firstName, lastName } = req.body;
-    try {
-      let result = await prisma.user.create({
-        data: { email: username, password, firstName, lastName },
-        select: { email: true, password: true, firstName: true },
-      });
-      console.log("Created user: ", result);
-      res.json({ result, msg: "user created" });
-    } catch (err) {
-      console.group(err)
-      res.status(500).json({ err });
-    }}
+    } else {
+      let username = req.headers["username"] as string;
+      let password = req.headers["password"] as string;
+      let { firstName, lastName } = req.body;
+      try {
+        let result = await prisma.user.create({
+          data: { email: username, password, firstName, lastName },
+          select: { email: true, password: true, firstName: true },
+        });
+        console.log("Created user: ", result);
+        res.json({ result, msg: "user created" });
+      } catch (err) {
+        console.group(err);
+        res.status(500).json({ err });
+      }
+    }
   }
 );
 
@@ -72,7 +78,7 @@ app.get(
       });
       if (result) {
         console.log("user signed in: ", result);
-        let token =  jwt.sign({email:result.email}, 'jwt-sign')
+        let token = jwt.sign({ email: result.email }, "jwt-sign");
         res.json({ result, token, msg: "Signed In" });
       } else {
         res.status(500).json({ msg: "err: NO record found" });
@@ -153,6 +159,7 @@ app.get(
     }
   }
 );
+ 
 //Update sql query
 // UPDATE "User"
 // SET email='testing@gmail.com'

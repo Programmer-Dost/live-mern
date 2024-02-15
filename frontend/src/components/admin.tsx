@@ -6,11 +6,22 @@ import axios from "axios";
 function Admin() {
   const adminDetails = useRecoilValue(adminAtom);
   const [UserList, setUserList] = useState([]);
+   // Just for fun request interceptor
+   axios.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    config.headers['username']= "admin@gmail.com";//modify config.headers and return new config
+    console.log("HTTP request interceptor")
+    return config;//return modified config
+  }, function (error) {
+    // Do something with request error
+    console.log("HTTP error interceptor")
+    return Promise.reject(error);//rejecting promise chain for handling encountered error
+  });
   async function fetchUsers() {
     console.log("Fetching users...");
     let response = await axios.get("http://localhost:8080/api/admin", {
       headers: {
-        username: "admin@gmail.com",
+        username: "admin.com",
         password: "abhijeet@gmail.com",
       },
     });

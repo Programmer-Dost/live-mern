@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const express_1 = __importDefault(require("express"));
 const zod_1 = require("zod");
+const axios_1 = __importDefault(require("axios"));
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const app = (0, express_1.default)();
@@ -88,8 +89,7 @@ app.get("/api/signin", userMiddleware, function (req, res) {
             });
             if (result) {
                 console.log("user signed in: ", result);
-                let token = jwt.sign({ email: result.email }, 'jwt-sign');
-                console.log({ token });
+                let token = jwt.sign({ email: result.email }, "jwt-sign");
                 res.json({ result, token, msg: "Signed In" });
             }
             else {
@@ -169,6 +169,16 @@ app.get("/api/admin", adminMiddleware, function (req, res) {
             res.status(500).json({ err });
         }
     });
+});
+// Add a request interceptor
+axios_1.default.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    console.log("HTTP request interceptor");
+    return config;
+}, function (error) {
+    // Do something with request error
+    console.log("HTTP error interceptor");
+    return Promise.reject(error);
 });
 //Update sql query
 // UPDATE "User"

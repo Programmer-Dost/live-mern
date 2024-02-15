@@ -13,6 +13,7 @@ import {
 } from "recoil";
 import Signup from "./components/Signup";
 import Admin from "./components/admin";
+import TodoList from "./components/TodoList";
 const Dashboard = React.lazy(() => import("./components/dashboard"));
 // import Dashboard from "./components/dashboard";
 function App() {
@@ -35,6 +36,7 @@ function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/todo" element={<TodoList />} />
           </Routes>
           {/* <Rerender /> */}
         </BrowserRouter>
@@ -58,8 +60,16 @@ function Appbar() {
   const navigate = useNavigate();
   return (
     <div>
+            <button
+        className="border bg-blue-400 hover:bg-blue-700 mt-4 ml-4 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
+        onClick={() => {
+          navigate("/");
+        }}
+      >
+        Home
+      </button>
       <button
-        className="border bg-blue-400 hover:bg-blue-700 mt-4 ml-4  text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
+        className="border bg-blue-400 hover:bg-blue-700 mt-4    text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
         onClick={() => {
           navigate("/dashboard");
         }}
@@ -94,10 +104,10 @@ function Appbar() {
       <button
         className="border bg-blue-400 hover:bg-blue-700 mt-4 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline"
         onClick={() => {
-          navigate("/");
+          navigate("/todo");
         }}
       >
-        Home
+       Todo
       </button>
     </div>
   );

@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://Abhijeet:mysecretpassword@localhost/postgres"
+}
+model users {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(255)
+  email String @db.VarChar(255) @unique
+  password String @db.VarChar(255)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  orders orders[] // access orders from users table
+}
+model products {
+id Int @id @default(autoincrement())
+name String @db.VarChar(255)
+description String
+price Decimal
+created_at DateTime @default(now())
+updated_at DateTime @default(now()) @updatedAt
+order_items order_items[] 
+}
+
+model orders{
+  id Int @id @default(autoincrement())
+user_id Int
+total_price Decimal
+status Status
+created_at DateTime @default(now())
+updated_at DateTime @default(now()) @updatedAt
+user      users    @relation(fields: [user_id], references: [id])
+order_items order_items[]
+}
+enum Status {
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+model order_items{
+  id Int @id @default(autoincrement())
+order_id Int
+product_id Int
+quantity Int
+price Decimal
+created_at DateTime @default(now())
+updated_at DateTime @default(now()) @updatedAt
+product  products    @relation(fields: [product_id], references: [id])
+order orders    @relation(fields: [order_id], references: [id])
+}

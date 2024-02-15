@@ -1,5 +1,6 @@
 import { Client } from 'pg';
 
+// Traditional queries using postgres only
 // Async function to fetch user data from the database given an email
 async function getUser(email: string) {
     const client = new Client({
