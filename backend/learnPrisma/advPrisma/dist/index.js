@@ -371,7 +371,7 @@ function filterData_pt3() {
                 user: {
                     email: {
                         startsWith: "A",
-                        mode: 'insensitive',
+                        mode: "insensitive", //case insensitive
                     },
                 },
             },
@@ -391,7 +391,189 @@ function filterData_pt3() {
         console.log("hi", result, result[0].order_items);
     });
 }
-filterData_pt3();
+// filterData_pt3();
+function getUsersByRelevance() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let product = yield prisma.products.findMany({
+            take: 10,
+            orderBy: {
+                id: "desc",
+            },
+            select: { name: true },
+        });
+        console.log({ product });
+    });
+}
+// getUsersByRelevance();
+function getUsersByCursor(myCursor) {
+    return __awaiter(this, void 0, void 0, function* () {
+        //   let cursorArg = myCursor ? { id: myCursor } : undefined;
+        let product = yield prisma.products.findMany({
+            take: 10,
+            cursor: myCursor !== undefined ? { id: myCursor } : undefined,
+            orderBy: {
+                id: "desc",
+            },
+            select: { id: true, name: true },
+        });
+        console.log({ product });
+        return product;
+    });
+}
+function runme() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const lastPostInResults = yield getUsersByCursor(undefined); // Remember: zero-based index! :)
+        const myCursor = lastPostInResults.length > 0
+            ? lastPostInResults[lastPostInResults.length - 1].id
+            : undefined;
+        getUsersByCursor(myCursor);
+        let dataUploaded = yield prisma.products.createMany({
+            data: [
+                {
+                    name: "T-Jeans",
+                    description: "Blue T-jeans with curly fit",
+                    price: 49.99,
+                },
+            ],
+        });
+        console.log(dataUploaded);
+    });
+}
+// runme();
+//Aggregation in prisma
+function aggregatingmyself() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const aggregations = yield prisma.products.aggregate({
+            _avg: {
+                price: true,
+            },
+            // where: { //run aggregation on filtered data
+            //   name: {
+            //     contains: 'shirt',
+            //   },
+            // },
+            orderBy: {
+                price: "asc",
+            },
+            _count: {
+                name: true,
+            },
+            take: 10,
+        });
+        console.log("Average age:" + aggregations._avg.price, { aggregations });
+    });
+}
+// aggregatingmyself();
+function usingGroupBy() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const groupUsers = yield prisma.products.groupBy({
+            by: ["created_at"], //group by created_at date after filtering data using below where stage
+            where: {
+                //use where clause for grouping only filtered data and not whole dataset
+                OR: [
+                    {
+                        name: {
+                            contains: "Dining",
+                        },
+                    },
+                    {
+                        name: {
+                            contains: "shirt",
+                        },
+                    },
+                    {
+                        name: {
+                            contains: "Blender",
+                        },
+                    },
+                ],
+            },
+            _sum: {
+                //at last find sum of all rows in same group and for each group
+                price: true,
+            },
+            having: {
+                price: {
+                    _max: {
+                        lte: 600,
+                    },
+                },
+            },
+            orderBy: {
+                created_at: "desc", //order the final result by date
+            },
+            skip: 1, //skipped the newest one just for fun
+        });
+        console.log("Group users:" + JSON.stringify(groupUsers, null, 2)); //return data in json else it will be [object,object]
+    });
+}
+// usingGroupBy();
+function totalProducts() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const productsCount = yield prisma.products.count(); //returns the total number of records
+        console.log(productsCount);
+    });
+}
+// totalProducts()
+function relationCount() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const usersWithCount = yield prisma.users.findMany({
+            include: {
+                //use select to only return _count field
+                _count: {
+                    select: { orders: true }, //count nested relations
+                },
+            },
+            orderBy: {
+                id: "asc",
+            },
+        });
+        console.log(usersWithCount);
+    });
+}
+// relationCount()
+function relationCount1() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const usersWithCount = yield prisma.users.count({
+            select: { _all: true }, //count all records even null ones. If you specified any field then it will only count non-null records.
+            //We don't have null records so it will return same as counting non-null records
+            orderBy: {
+                id: "asc",
+            },
+        });
+        console.log(usersWithCount);
+    });
+}
+// relationCount1();    
+function filteredCount() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const usersCount = yield prisma.users.count({
+            where: {
+                orders: {
+                    some: {
+                        total_price: {
+                            gte: 430,
+                        },
+                    },
+                },
+            },
+        });
+        console.log(usersCount);
+    });
+}
+filteredCount();
+function distinctFilter() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const distinctProducts = yield prisma.products.findMany({
+            distinct: ['name'],
+            select: {
+                name: true,
+            },
+        });
+        console.log(distinctProducts);
+    });
+}
+distinctFilter();
 //Update sql query
 // UPDATE "User"
 // SET email='testing@gmail.com'

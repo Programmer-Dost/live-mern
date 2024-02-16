@@ -1,9 +1,10 @@
 // Some advanced features
 //Start psql server (locally): psql -h localhost -p 5432 -d dbname
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import express, { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import axios from "axios";
+import { products } from "@prisma/client";
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const app = express();
@@ -301,7 +302,7 @@ async function filterData() {
   console.log({ result }, result[0].orders);
 }
 // filterData();
-
+    
 async function filterData_pt2() {
   const result = await prisma.users.findMany({
     where: {
@@ -349,7 +350,7 @@ async function filterData_pt3() {
       user: {
         email: {
           startsWith: "A",
-          mode: 'insensitive',//case insensitive
+          mode: "insensitive", //case insensitive
         },
       },
     },
@@ -366,10 +367,188 @@ async function filterData_pt3() {
       },
     },
   });
-  console.log("hi", result, result[0].order_items,  );
+  console.log("hi", result, result[0].order_items);
 }
-filterData_pt3();
+// filterData_pt3();
 
+async function getUsersByRelevance() {
+  let product = await prisma.products.findMany({
+    take: 10,
+    orderBy: {
+      id: "desc",
+    },
+    select: { name: true },
+  });
+  console.log({ product });
+}
+// getUsersByRelevance();
+async function getUsersByCursor(
+  myCursor: number | undefined
+): Promise<products[]> {
+  //   let cursorArg = myCursor ? { id: myCursor } : undefined;
+  let product = await prisma.products.findMany({
+    take: 10,
+    cursor: myCursor !== undefined ? { id: myCursor } : undefined,
+    orderBy: {
+      id: "desc",
+    },
+    select: { id: true, name: true },
+  });
+  console.log({ product });
+  return product as products[];
+}
+async function runme() {
+  const lastPostInResults = await getUsersByCursor(undefined); // Remember: zero-based index! :)
+  const myCursor =
+    lastPostInResults.length > 0
+      ? lastPostInResults[lastPostInResults.length - 1].id
+      : undefined;
+  getUsersByCursor(myCursor);
+  let dataUploaded = await prisma.products.createMany({
+    data: [
+      {
+        name: "T-Jeans",
+        description: "Blue T-jeans with curly fit",
+        price: 49.99,
+      },
+    ],
+  });
+  console.log(dataUploaded);
+}
+// runme();
+
+//Aggregation in prisma
+async function aggregatingmyself() {
+  const aggregations = await prisma.products.aggregate({
+    _avg: {
+      price: true,
+    },
+
+    // where: { //run aggregation on filtered data
+    //   name: {
+    //     contains: 'shirt',
+    //   },
+    // },
+
+    orderBy: {
+      price: "asc",
+    },
+    _count: {
+      name: true,
+    },
+    take: 10,
+  });
+  console.log("Average age:" + aggregations._avg.price, { aggregations });
+}
+// aggregatingmyself();
+
+async function usingGroupBy() {
+  const groupUsers = await prisma.products.groupBy({
+    by: ["created_at"], //group by created_at date after filtering data using below where stage
+    where: {
+      //use where clause for grouping only filtered data and not whole dataset
+      OR: [
+        {
+          name: {
+            contains: "Dining",
+          },
+        },
+        {
+          name: {
+            contains: "shirt",
+          },
+        },
+        {
+          name: {
+            contains: "Blender",
+          },
+        },
+      ],
+    },
+    _sum: {
+      //at last find sum of all rows in same group and for each group
+      price: true,
+    },
+    having: {
+      price: {
+        _max: {
+          lte: 600,
+        },
+      },
+    },
+    orderBy: {
+      created_at: "desc", //order the final result by date
+    },
+    skip: 1, //skipped the newest one just for fun
+  });
+  console.log("Group users:" + JSON.stringify(groupUsers, null, 2)); //return data in json else it will be [object,object]
+}
+
+// usingGroupBy();
+async function totalProducts() {
+  const productsCount = await prisma.products.count(); //returns the total number of records
+  console.log(productsCount);
+}
+// totalProducts()
+
+async function relationCount() {
+  const usersWithCount = await prisma.users.findMany({
+    include: {
+      //use select to only return _count field
+      _count: {
+        select: { orders: true }, //count nested relations
+      },
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+  console.log(usersWithCount);
+}
+
+// relationCount()
+async function relationCount1() {
+  const usersWithCount = await prisma.users.count({
+    select: { _all: true }, //count all records even null ones. If you specified any field then it will only count non-null records.
+    //We don't have null records so it will return same as counting non-null records
+
+    orderBy: {
+      id: "asc",
+    },
+  });
+  console.log(usersWithCount);
+}
+
+// relationCount1();
+
+async function filteredCount() {
+  const usersCount = await prisma.users.count({
+    where: {
+      orders: {
+        some: {
+          total_price: {
+            gte: 430,
+          },
+        },
+      },
+    },
+  });
+  console.log(usersCount);
+}
+// filteredCount();
+
+async function distinctFilter() {
+  const distinctProducts = await prisma.products.findMany({
+    distinct: ["name"], //return products having different names i.e Watch will be returned once if multiple products with same name exists
+    // distinct: ["name", "price"], multiple fields can be passed
+    select: {
+      name: true,
+    },
+  });
+  console.log(distinctProducts);
+}
+
+// distinctFilter();
 //Update sql query
 // UPDATE "User"
 // SET email='testing@gmail.com'
